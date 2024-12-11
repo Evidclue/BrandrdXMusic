@@ -1,3 +1,4 @@
+import config  # Make sure this line is at the top of your bot.py file
 import yt_dlp
 import random
 import requests
