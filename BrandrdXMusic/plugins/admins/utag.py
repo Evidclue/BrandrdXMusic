@@ -10,19 +10,22 @@ from BrandrdXMusic.utils.branded_ban import admin_filter
 
 SPAM_CHATS = {}
 
-
+# Start unlimited tagging
 @app.on_message(
     filters.command(["utag", "uall"], prefixes=["/", "@", ".", "#"]) & admin_filter
 )
 async def tag_all_users(_, message):
     global SPAM_CHATS
     chat_id = message.chat.id
+    
+    # Check if no text is provided after the command
     if len(message.text.split()) == 1:
         await message.reply_text(
             "** ɢɪᴠᴇ sᴏᴍᴇ ᴛᴇxᴛ ᴛᴏ ᴛᴀɢ ᴀʟʟ, ʟɪᴋᴇ »** `@utag Hi Friends`"
         )
         return
 
+    # Get the text to be sent with tags
     text = message.text.split(None, 1)[1]
     if text:
         await message.reply_text(
@@ -33,16 +36,20 @@ async def tag_all_users(_, message):
     f = True
     while f:
         if SPAM_CHATS.get(chat_id) == False:
-            await message.reply_text("**ᴜɴʟɪᴍɪᴛᴇᴅ ᴛᴀɢɢɪɴɢ sᴜᴄᴄᴇssғᴜʟʟʏ sᴛᴏᴘᴘᴇᴅ.**")
+            await message.reply_text("**ᴜɴʟɪᴍɪᴛᴇᴅ ᴛᴀɢɢɪɴɢ sᴜᴄᴄᴇssғᴜʟʟʏ sᴛᴏᴘᴘɪɴɢ...**")
             break
+        
         usernum = 0
         usertxt = ""
         try:
+            # Iterate through all chat members
             async for m in app.get_chat_members(message.chat.id):
                 if m.user.is_bot:
                     continue
                 usernum += 1
                 usertxt += f"\n⊚ [{m.user.first_name}](tg://user?id={m.user.id})\n"
+                
+                # Send tag message in batches of 5 users
                 if usernum == 5:
                     await app.send_message(
                         message.chat.id,
@@ -50,11 +57,12 @@ async def tag_all_users(_, message):
                     )
                     usernum = 0
                     usertxt = ""
-                    await asyncio.sleep(7)
+                    await asyncio.sleep(7)  # Delay to avoid spam
         except Exception as e:
             print(e)
 
 
+# Stop unlimited tagging
 @app.on_message(
     filters.command(
         ["stoputag", "stopuall", "offutag", "offuall", "utagoff", "ualloff"],
@@ -65,8 +73,12 @@ async def tag_all_users(_, message):
 async def stop_tagging(_, message):
     global SPAM_CHATS
     chat_id = message.chat.id
+    
+    # Check if the tagging is already active
     if SPAM_CHATS.get(chat_id) == True:
         SPAM_CHATS[chat_id] = False
         return await message.reply_text("**ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ sᴛᴏᴘᴘɪɴɢ ᴜɴʟɪᴍɪᴛᴇᴅ ᴛᴀɢɢɪɴɢ...**")
+    
+    # If tagging is not active, send a message
     else:
         await message.reply_text("**ᴜᴛᴀɢ ᴘʀᴏᴄᴇss ɪs ɴᴏᴛ ᴀᴄᴛɪᴠᴇ**")
