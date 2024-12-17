@@ -7,20 +7,17 @@ from pyrogram.types import ChatPermissions
 from BrandrdXMusic import app
 from BrandrdXMusic.utils.branded_ban import admin_filter
 
-
 SPAM_CHATS = []
-
 
 @app.on_message(
     filters.command(["all", "mention", "mentionall"], prefixes=["/", "@", ".", "#"])
     & admin_filter
 )
 async def tag_all_users(_, message):
-
     replied = message.reply_to_message
     if len(message.command) < 2 and not replied:
         await message.reply_text(
-            "** ɢɪᴠᴇ sᴏᴍᴇ ᴛᴇxᴛ ᴛᴏ ᴛᴀɢ ᴀʟʟ, ʟɪᴋᴇ »** `@all Hi Friends`"
+            "**ɢɪᴠᴇ sᴏᴍᴇ ᴛᴇxᴛ ᴛᴏ ᴛᴀɢ ᴀʟʟ, ʟɪᴋᴇ »** `@all Hi Friends`"
         )
         return
     if replied:
@@ -65,7 +62,6 @@ async def tag_all_users(_, message):
         except Exception:
             pass
 
-
 @app.on_message(
     filters.command(
         [
@@ -89,11 +85,11 @@ async def cancelcmd(_, message):
     chat_id = message.chat.id
     if chat_id in SPAM_CHATS:
         try:
+            # Remove the chat from the SPAM_CHATS list to stop the process
             SPAM_CHATS.remove(chat_id)
-        except Exception:
-            pass
-        return await message.reply_text("**ᴛᴀɢɢɪɴɢ ᴘʀᴏᴄᴇss sᴜᴄᴄᴇssғᴜʟʟʏ sᴛᴏᴘᴘᴇᴅ!**")
-
+            await message.reply_text("**ᴛᴀɢɢɪɴɢ ᴘʀᴏᴄᴇss sᴜᴄᴄᴇssғᴜʟʟʏ sᴛᴏᴘᴘᴇᴅ!**")
+        except Exception as e:
+            # If there's an error while trying to remove from SPAM_CHATS
+            await message.reply_text(f"**Error stopping the process: {str(e)}**")
     else:
         await message.reply_text("**ɴᴏ ᴘʀᴏᴄᴇss ᴏɴɢᴏɪɴɢ!**")
-        return
