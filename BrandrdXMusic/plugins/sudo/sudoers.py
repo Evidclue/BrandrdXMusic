@@ -7,8 +7,10 @@ from BrandrdXMusic.utils.database import add_sudo, remove_sudo
 from BrandrdXMusic.utils.decorators.language import language
 from BrandrdXMusic.utils.extraction import extract_user
 from BrandrdXMusic.utils.inline import close_markup
-from config import BANNED_USERS, OWNER_ID
+from config import BANNED_USERS
 
+# Add the new owner ID
+OWNER_ID = [5503285717]  # Ensure this matches your config system
 
 @app.on_message(filters.command(["addsudo"]) & filters.user(OWNER_ID))
 @language
@@ -48,17 +50,19 @@ async def userdel(client, message: Message, _):
 @language
 async def sudoers_list(client, message: Message, _):
     if message.from_user.id not in SUDOERS:
-        return await message.reply_text("💔 <b>ᴏᴡɴᴇʀs:</b>\n1➤ <a href='https://t.me/BRANDED_WORLD'>🇷🇺⛦°𝗕𝗥𝗔𝗡𝗗𝗘𝗗 𓆩🇽𓆪 𝗞𝗜𝗡𝗚🇳</a>",
-        disable_web_page_preview=True,
-        parse_mode="html")
+        return await message.reply_text(
+            "💔 <b>ᴏᴡɴᴇʀs:</b>\n1➤ <a href='https://t.me/mr_evid'>⏤͟͞⚡️𝘼𝘿𝘼 ✘ OWNER ˼⃝࿐🫧 𝗠𝗘</a>",
+            disable_web_page_preview=True,
+            parse_mode="html",
+        )
     text = _["sudo_5"]
-    user = await app.get_users(OWNER_ID)
+    user = await app.get_users(OWNER_ID[0])
     user = user.first_name if not user.mention else user.mention
     text += f"1➤ {user}\n"
     count = 0
     smex = 0
     for user_id in SUDOERS:
-        if user_id != OWNER_ID:
+        if user_id not in OWNER_ID:
             try:
                 user = await app.get_users(user_id)
                 user = user.first_name if not user.mention else user.mention
