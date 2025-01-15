@@ -112,7 +112,7 @@ __
 Sᴇᴀʀᴄʜ ᴄᴏᴍᴍᴀɴᴅꜱ:
 
 • /google <query> : Search the google for the given query.
-• /image (/imgs) <query> : Get the images regarding to your query
+• /image (/imgs) <query> : Get the images but only after owner approval
 
 Example:
 /google pyrogram: return top 5 reuslts.
