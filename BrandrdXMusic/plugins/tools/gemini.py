@@ -55,7 +55,7 @@ async def ai_chat(bot, message):
     user_input = message.reply_to_message.text if message.reply_to_message else " ".join(message.command[1:])
     
     # ✅ Display "Thinking..." Message
-    processing_msg = await message.reply_text("🤖 " + bold_text("Thinking..."))
+    processing_msg = await message.reply_text("🤖 " + bold_text("Ada Thinking..."))
 
     # ✅ Fetch AI Response
     response_text = await get_ai_response(user_id, user_input)
@@ -94,7 +94,7 @@ async def message_worker():
         message, chat_id, user_id = await MESSAGE_QUEUE.get()
 
         try:
-            processing_msg = await message.reply_text("🤖 " + bold_text("Thinking..."))
+            processing_msg = await message.reply_text("🤖 " + bold_text("Ada Thinking..."))
             
             # ✅ Get AI Response
             response_text = await get_ai_response(user_id, message.text)
