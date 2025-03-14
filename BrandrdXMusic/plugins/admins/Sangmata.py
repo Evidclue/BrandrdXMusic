@@ -51,3 +51,4 @@ async def sg(client: Client, message: Message):
     
     await lol.delete()
     
+ 
