@@ -2,9 +2,9 @@ import os
 import google.generativeai as genai
 import asyncio
 import time
-from pyrogram import filters
+from pyrogram import filters, Client
 from pyrogram.errors import FloodWait, RPCError
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
 from BrandrdXMusic import app
 
 # ✅ Secure API Key Retrieval
@@ -177,4 +177,31 @@ async def get_related_song(song_query):
 async def ai_callback(client, query):
     await query.message.edit_text(f"💡 {bold_text('Ada Chat Guide:')}\n\n💬 {bold_text('Type:')} `/ai <message>`\n📌 {bold_text('Example:')} `/ai What is Gravity?`",
                                   reply_markup=InlineKeyboardMarkup(HELP_BUTTON))
- 
+
+# ✅ Handle Message Deletions
+@app.on_deleted_messages(filters.group)
+async def handle_deleted_messages(client, messages):
+    for message in messages:
+        chat_id = message.chat.id
+        if DREAM_MODE.get(chat_id, False):
+            # Fetch the message content from the cache or database if available
+            # For simplicity, we assume the message content is cached in USER_CONTEXT
+            user_id = message.from_user.id if message.from_user else None
+            if user_id and user_id in USER_CONTEXT:
+                user_input = USER_CONTEXT[user_id][-1] if USER_CONTEXT[user_id] else None
+                if user_input and (user_input.startswith("/play ") or user_input.startswith("/vplay ")):
+                    song_query = user_input.split(maxsplit=1)[1]
+                    related_song = await get_related_song(song_query)
+                    if related_song:
+                        await client.send_message(chat_id, f"🎵 {bold_text('Related Song:')} {related_song}")
+
+# ✅ Handle Message Edits
+@app.on_edited_message(filters.group & filters.text)
+async def handle_edited_messages(client, message):
+    chat_id = message.chat.id
+    if DREAM_MODE.get(chat_id, False) and (message.text.startswith("/play ") or message.text.startswith("/vplay ")):
+        song_query = message.text.split(maxsplit=1)[1]
+        related_song = await get_related_song(song_query)
+        if related_song:
+            await message.reply_text(f"🎵 {bold_text('Related Song:')} {related_song}")
+
