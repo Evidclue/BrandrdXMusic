@@ -2,9 +2,9 @@ import os
 import google.generativeai as genai
 import asyncio
 import time
-from pyrogram import filters, Client
+from pyrogram import filters
 from pyrogram.errors import FloodWait, RPCError
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from BrandrdXMusic import app
 
 # ✅ Secure API Key Retrieval
@@ -20,7 +20,6 @@ MODEL_NAME = "models/gemini-2.0-flash"
 
 # ✅ Storage for Auto AI Mode & Context
 AUTO_AI_MODE = {}
-DREAM_MODE = {}
 USER_CONTEXT = {}
 LAST_REPLY_TIME = {}
 MESSAGE_QUEUE = asyncio.Queue()  # ✅ Async Queue to Process AI Replies
@@ -44,18 +43,6 @@ async def disable_auto_ai(bot, message):
     AUTO_AI_MODE[message.chat.id] = False
     await message.reply_text(f"❌ {bold_text('AI Auto-Reply Disabled!')}\nUse `/ai on` to enable again.")
 
-# ✅ Enable Dream Mode
-@app.on_message(filters.command("d on") & filters.group)
-async def enable_dream_mode(bot, message):
-    DREAM_MODE[message.chat.id] = True
-    await message.reply_text(f"🎵 {bold_text('Dream Mode Enabled!')}\nAuto-play related songs.\nUse `/d off` to disable.")
-
-# ✅ Disable Dream Mode
-@app.on_message(filters.command("d off") & filters.group)
-async def disable_dream_mode(bot, message):
-    DREAM_MODE[message.chat.id] = False
-    await message.reply_text(f"❌ {bold_text('Dream Mode Disabled!')}\nUse `/d on` to enable again.")
-
 # ✅ AI Chat Command
 @app.on_message(filters.command("ai"))
 async def ai_chat(bot, message):
@@ -66,7 +53,7 @@ async def ai_chat(bot, message):
 
     user_id = message.from_user.id
     user_input = message.reply_to_message.text if message.reply_to_message else " ".join(message.command[1:])
-
+    
     # ✅ Display "Thinking..." Message
     processing_msg = await message.reply_text("🤖 " + bold_text("Ada Thinking..."))
 
@@ -74,7 +61,7 @@ async def ai_chat(bot, message):
     response_text = await get_ai_response(user_id, user_input)
 
     final_response = f"💬 {bold_text('AI Response:')}\n\n{response_text}\n\n🔹 {bold_text('Powered by AI')}"
-
+    
     # ✅ Prevent FloodWait
     try:
         await processing_msg.edit(final_response)
@@ -101,13 +88,6 @@ async def auto_ai_respond(bot, message):
         # ✅ Add Message to Processing Queue
         await MESSAGE_QUEUE.put((message, chat_id, user_id))
 
-    # ✅ Handle Dream Mode
-    if DREAM_MODE.get(chat_id, False) and (message.text.startswith("/play ") or message.text.startswith("/vplay ")):
-        song_query = message.text.split(maxsplit=1)[1]
-        related_song = await get_related_song(song_query)
-        if related_song:
-            await message.reply_text(f"🎵 {bold_text('Related Song:')} {related_song}")
-
 # ✅ AI Response Worker (Prevents FloodWait & Crashes)
 async def message_worker():
     while True:
@@ -115,7 +95,7 @@ async def message_worker():
 
         try:
             processing_msg = await message.reply_text("🤖 " + bold_text("Ada Thinking..."))
-
+            
             # ✅ Get AI Response
             response_text = await get_ai_response(user_id, message.text)
             final_response = f"💬 {bold_text('AI Response:')}\n\n{response_text}\n\n🔹 {bold_text('Powered by AI')}"
@@ -161,47 +141,8 @@ async def get_ai_response(user_id, user_input):
     except Exception as e:
         return f"⚠ {bold_text('AI Error:')} {str(e)}"
 
-# ✅ Fetch Related Song Using Gemini AI
-async def get_related_song(song_query):
-    try:
-        model = genai.GenerativeModel(MODEL_NAME)
-        response = model.generate_content(f"Find a related song to '{song_query}'")
-
-        related_song = response.text.strip().split("\n")[0]  # Take the first suggestion
-        return related_song
-    except Exception as e:
-        return f"⚠ {bold_text('AI Error:')} {str(e)}"
-
 # ✅ AI Help Callback Handler
 @app.on_callback_query(filters.regex("help_ai"))
 async def ai_callback(client, query):
     await query.message.edit_text(f"💡 {bold_text('Ada Chat Guide:')}\n\n💬 {bold_text('Type:')} `/ai <message>`\n📌 {bold_text('Example:')} `/ai What is Gravity?`",
                                   reply_markup=InlineKeyboardMarkup(HELP_BUTTON))
-
-# ✅ Handle Message Deletions
-@app.on_deleted_messages(filters.group)
-async def handle_deleted_messages(client, messages):
-    for message in messages:
-        chat_id = message.chat.id
-        if DREAM_MODE.get(chat_id, False):
-            # Fetch the message content from the cache or database if available
-            # For simplicity, we assume the message content is cached in USER_CONTEXT
-            user_id = message.from_user.id if message.from_user else None
-            if user_id and user_id in USER_CONTEXT:
-                user_input = USER_CONTEXT[user_id][-1] if USER_CONTEXT[user_id] else None
-                if user_input and (user_input.startswith("/play ") or user_input.startswith("/vplay ")):
-                    song_query = user_input.split(maxsplit=1)[1]
-                    related_song = await get_related_song(song_query)
-                    if related_song:
-                        await client.send_message(chat_id, f"🎵 {bold_text('Related Song:')} {related_song}")
-
-# ✅ Handle Message Edits
-@app.on_edited_message(filters.group & filters.text)
-async def handle_edited_messages(client, message):
-    chat_id = message.chat.id
-    if DREAM_MODE.get(chat_id, False) and (message.text.startswith("/play ") or message.text.startswith("/vplay ")):
-        song_query = message.text.split(maxsplit=1)[1]
-        related_song = await get_related_song(song_query)
-        if related_song:
-            await message.reply_text(f"🎵 {bold_text('Related Song:')} {related_song}")
-
