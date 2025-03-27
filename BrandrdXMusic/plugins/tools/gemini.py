@@ -177,3 +177,4 @@ async def get_related_song(song_query):
 async def ai_callback(client, query):
     await query.message.edit_text(f"💡 {bold_text('Ada Chat Guide:')}\n\n💬 {bold_text('Type:')} `/ai <message>`\n📌 {bold_text('Example:')} `/ai What is Gravity?`",
                                   reply_markup=InlineKeyboardMarkup(HELP_BUTTON))
+ 
